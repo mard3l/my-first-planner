@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="el">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+  <meta content="light dark" name="color-scheme"/>
+  <title>
+   Η λίστα μου
+  </title>
+  <style>
+/* Βασικά χρώματα και διάταξη της εφαρμογής */
+:root {
+  --bg:#faf7f2;
+  --card:#fff;
+  --text:#2b2b2b;
+  --muted:#8a8478;
+  --accent:#d9603b;
+  --line:#ece6dc;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media(prefers-color-scheme:dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#1c1b19;
+    --card:#262421;
+    --text:#f0ece4;
+    --muted:#9a9488;
+    --accent:#ee7d57;
+    --line:#36332e
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#1c1b19;
+  --card:#262421;
+  --text:#f0ece4;
+  --muted:#9a9488;
+  --accent:#ee7d57;
+  --line:#36332e
+}
+* {
+  box-sizing:border-box
+}
+html {
+  scroll-padding-top:env(safe-area-inset-top,0px)
+}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
+}
+main {
+  max-width:620px;
+  margin:0 auto;
+  padding:24px 16px 48px
+}
+h1 {
+  font-size:26px;
+  margin:0 0 4px
+}
+.date {
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:18px;
+  text-transform:capitalize
+}
+button,input {
+  font:inherit
+}
+button {
+  cursor:pointer
+}
+button:focus-visible,input:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+.hidden,[hidden] {
+  display:none!important
+}
+.yearbar,.monthbar {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:16px
+}
+.yearbar {
+  justify-content:space-between
+}
+.yearbar h2,.monthbar h2 {
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(24px,6vw,34px);
+  margin:0;
+  flex:1
+}
+.monthbar h2 {
+  font-size:clamp(22px,5vw,30px)
+}
+.yearbar button,.monthbar button,.secondary {
+  background:var(--card);
+  border:1px solid var(--line);
+  color:var(--text);
+  border-radius:10px;
+  padding:9px 11px;
+  font-size:14px
+}
+.months {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px
+}
+.monthcard {
+  padding:22px 8px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--card);
+  color:var(--text);
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:16px
+}
+.monthcard:hover,.day:not(.blank):hover {
+  border-color:var(--accent)
+}
+.weekdays,.days {
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr))
+}
+.weekdays div {
+  text-align:center;
+  padding:8px 0;
+  font-family:Georgia,serif;
+  font-size:12px;
+  color:var(--muted);
+  background:var(--card);
+  border:1px solid var(--line)
+}
+.days {
+  border-left:1px solid var(--line);
+  border-top:1px solid var(--line)
+}
+.day {
+  min-width:0;
+  min-height:64px;
+  padding:6px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  border:0;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  font-size:14px;
+  text-align:left
+}
+.day.weekend {
+  background:color-mix(in srgb,var(--line) 45%,var(--card))
+}
+.day.blank {
+  background:transparent;
+  cursor:default
+}
+.day.today {
+  outline:2px solid var(--accent);
+  outline-offset:-2px
+}
+.day.selected {
+  background:color-mix(in srgb,var(--accent) 15%,var(--card))
+}
+.day .dot {
+  font-size:10px;
+  color:var(--accent);
+  overflow:hidden;
+  max-width:100%;
+  white-space:nowrap
+}
+.panel {
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--card);
+  padding:14px;
+  margin-top:12px
+}
+.panel h3 {
+  margin:0 0 12px;
+  font-size:18px
+}
+.tabs {
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:2px 1px 9px;
+  margin-bottom:8px
+}
+.tab {
+  flex:none;
+  padding:8px 12px;
+  border:1px solid var(--line);
+  border-radius:99px;
+  background:var(--card);
+  color:var(--text);
+  font-size:14px
+}
+.tab.on {
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff
+}
+.tab.new {
+  color:var(--muted);
+  border-style:dashed
+}
+.newtab,.add {
+  display:flex;
+  gap:8px;
+  margin-bottom:10px
+}
+.newtab input,.add input[type=text],.add input[type=number],.goalrow input {
+  min-width:0;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--bg);
+  color:var(--text);
+  font-size:16px
+}
+.newtab input,.add input[type=text] {
+  flex:1
+}
+.newtab button,.add button,.calc {
+  padding:0 16px;
+  border:0;
+  border-radius:11px;
+  background:var(--accent);
+  color:white;
+  font-size:20px
+}
+.add input[type=number] {
+  width:105px
+}
+.tabact {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:14px;
+  margin:0 0 14px
+}
+.tabact button {
+  background:none;
+  border:0;
+  padding:0;
+  color:var(--muted);
+  font-size:13px;
+  text-decoration:underline
+}
+.bar {
+  height:8px;
+  background:var(--line);
+  border-radius:99px;
+  overflow:hidden;
+  margin-bottom:6px
+}
+.bar i {
+  display:block;
+  height:100%;
+  width:0;
+  background:var(--accent);
+  transition:width .2s
+}
+.prog {
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:14px;
+  min-height:16px
+}
+.rep {
+  font-size:14px;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:12px
+}
+ul {
+  list-style:none;
+  margin:0;
+  padding:0
+}
+li.task {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--bg);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px 12px;
+  margin-bottom:8px
+}
+li.task input {
+  width:21px;
+  height:21px;
+  accent-color:var(--accent);
+  flex:none
+}
+li.task span.tasktext {
+  flex:1;
+  min-width:0;
+  overflow-wrap:anywhere
+}
+li.done span.tasktext {
+  text-decoration:line-through;
+  color:var(--muted)
+}
+.tag {
+  font-size:11px;
+  color:var(--muted);
+  flex:none
+}
+li button.delete {
+  border:0;
+  background:none;
+  color:var(--muted);
+  font-size:21px;
+  padding:0 4px
+}
+.empty {
+  color:var(--muted);
+  text-align:center;
+  padding:22px 8px
+}
+.clear {
+  margin-top:10px;
+  background:none;
+  border:1px solid var(--line);
+  color:var(--muted);
+  padding:8px 12px;
+  border-radius:10px;
+  font-size:14px
+}
+.money-tabs {
+  display:flex;
+  gap:8px;
+  margin-bottom:12px
+}
+.goalrow {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:18px 0 12px
+}
+.goalrow label {
+  font-size:14px
+}
+.goalrow input {
+  width:115px
+}
+.amt {
+  flex:none;
+  font-weight:bold
+}
+.calc {
+  width:100%;
+  padding:13px;
+  font-size:16px
+}
+.result {
+  margin-top:14px;
+  line-height:1.8
+}
+.msg {
+  margin-top:10px;
+  padding:12px 14px;
+  border-radius:12px;
+  font-weight:bold;
+  background:var(--bg);
+  border:1px solid var(--line)
+}
+.msg.minus {
+  color:#c0392b
+}
+.msg.close {
+  color:#d98a1e
+}
+.msg.ok {
+  color:#2e9d5b
+}
+.status {
+  font-size:12px;
+  color:var(--muted);
+  margin-top:12px
+}
+@media(max-width:390px) {
+  main {
+    padding:18px 10px 36px
+  }
+  .months {
+    gap:7px
+  }
+  .monthcard {
+    padding:18px 4px;
+    font-size:14px
+  }
+  .monthbar {
+    gap:6px
+  }
+  .monthbar button {
+    padding:8px 7px;
+    font-size:12px
+  }
+  .day {
+    min-height:54px;
+    padding:4px;
+    font-size:12px
+  }
+  .add {
+    gap:6px
+  }
+  .add input[type=number] {
+    width:82px;
+    padding:10px 7px
+  }
+  .add input[type=text] {
+    padding:10px 8px
+  }
+}
+</style>
+ </head>
+ <body>
+  <main>
+   <h1>
+    Η λίστα μου
+   </h1>
+   <div class="date" id="date">
+   </div>
+   <section id="viewYear">
+    <div class="yearbar">
+     <button id="yearPrev">
+      ‹ Προηγούμενο
+     </button>
+     <h2 id="yearTitle">
+     </h2>
+     <button id="yearNext">
+      Επόμενο ›
+     </button>
+    </div>
+    <div class="months" id="months">
+    </div>
+   </section>
+   <section hidden="" id="viewMonth">
+    <div class="monthbar">
+     <button id="monthBack">
+      ‹ Έτη
+     </button>
+     <h2 id="monthTitle">
+     </h2>
+     <button id="moneyBtn">
+      € Οικονομικά
+     </button>
+    </div>
+    <div class="weekdays" id="weekdays">
+    </div>
+    <div class="days" id="days">
+    </div>
+   </section>
+   <section hidden="" id="viewDay">
+    <div class="monthbar">
+     <button id="dayBack">
+      ‹ Μήνας
+     </button>
+     <h2 id="dayTitle">
+     </h2>
+     <button id="dayMoneyBtn">
+      €
+     </button>
+    </div>
+    <div class="panel">
+     <h3>
+      Οι εργασίες μου
+     </h3>
+     <div class="tabs" id="tabs">
+     </div>
+     <div class="newtab" hidden="" id="newtab">
+      <input id="tabName" maxlength="30" placeholder="Όνομα νέας καρτέλας" type="text"/>
+      <button aria-label="Δημιουργία καρτέλας" id="tabOk">
+       +
+      </button>
+     </div>
+     <div class="tabact">
+      <button id="rename">
+       Μετονομασία
+      </button>
+      <button id="pinTab">
+       Καρφίτσωμα σε κάθε μέρα
+      </button>
+      <button id="clear">
+       Καθαρισμός ολοκληρωμένων
+      </button>
+     </div>
+     <div class="add">
+      <input id="txt" maxlength="180" placeholder="Ποια εργασία έχεις;" type="text"/>
+      <button aria-label="Προσθήκη εργασίας" id="addBtn">
+       +
+      </button>
+     </div>
+     <label class="rep">
+      <input id="daily" type="checkbox"/>
+      Επανάληψη κάθε μέρα
+     </label>
+     <div class="bar">
+      <i id="fill">
+      </i>
+     </div>
+     <div class="prog" id="prog">
+     </div>
+     <ul id="list">
+     </ul>
+     <div aria-live="polite" class="status" id="saveStatus">
+     </div>
+    </div>
+   </section>
+   <section hidden="" id="viewMoney">
+    <div class="monthbar">
+     <button id="moneyBack">
+      ‹ Πίσω
+     </button>
+     <h2 id="moneyTitle">
+     </h2>
+    </div>
+    <div class="money-tabs">
+     <button class="tab on" id="tabIncome">
+      Έσοδα
+     </button>
+     <button class="tab" id="tabExpense">
+      Έξοδα
+     </button>
+    </div>
+    <div class="add">
+     <input id="mName" maxlength="40" placeholder="Περιγραφή" type="text"/>
+     <input id="mAmount" min="0" placeholder="€" step="0.01" type="number"/>
+     <button aria-label="Προσθήκη ποσού" id="mAdd">
+      +
+     </button>
+    </div>
+    <div class="prog" id="mTotal">
+    </div>
+    <ul id="mList">
+    </ul>
+    <div class="goalrow">
+     <label for="goal">
+      Στόχος αποταμίευσης (€)
+     </label>
+     <input id="goal" min="0" placeholder="0,00" step="0.01" type="number"/>
+    </div>
+    <button class="calc" id="calcBtn">
+     Υπολογισμός μήνα
+    </button>
+    <div aria-live="polite" class="result" id="result">
+    </div>
+   </section>
+  </main>
+  <script>
+// Κώδικας εφαρμογής: ημερολόγιο, εργασίες και οικονομικά.
+'use strict';
+// ---------- Αποθήκευση και σταθερές ----------
+const KEY = 'checklist-v4';
+const MONTHS = ['Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος','Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+const WEEKDAYS = ['Κυρ','Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ'];
+let data = {
+    tabs:[],
+    active:null,
+    money:[],
+    goals: {
+    }
+};
+let view = {
+    screen:'year',
+    year:new Date().getFullYear(),
+    month:new Date().getMonth(),
+    day:new Date().getDate(),
+    returnFromMoney:'month'
+};
+let moneyKind = 'income';
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+function dateKey(y,m,d) {
+    return `${y}-${pad(m+1)}-${pad(d)}`;
+}
+function dayKey() {
+    return dateKey(view.year,view.month,view.day);
+}
+function monthKey() {
+    return `${view.year}-${pad(view.month+1)}`;
+}
+function todayKey() {
+    const d=new Date();
+    return dateKey(d.getFullYear(),d.getMonth(),d.getDate());
+}
+function uid() {
+    return Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+}
+function eur(n) {
+    return (Number(n)||0).toLocaleString('el-GR', {
+        minimumFractionDigits:2,maximumFractionDigits:2
+    }
+    )+' €';
+}
+function normalizeDate(value) {
+    if(!value)return '';
+    const m=String(value).match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    return m?`${m[1]}-${pad(m[2])}-${pad(m[3])}`:String(value);
+}
+// ---------- Φόρτωση και αποθήκευση δεδομένων ----------
+function load() {
+    try {
+        const raw=localStorage.getItem(KEY);
+        if(raw) {
+            const parsed=JSON.parse(raw);
+            if(parsed&&Array.isArray(parsed.tabs))data= {
+                ...data,
+                ...parsed
+            };
+        }
+    }
+    catch(e) {
+        console.warn('Δεν ήταν δυνατή η ανάγνωση των αποθηκευμένων δεδομένων.',e);
+    }
+    if(!Array.isArray(data.tabs))data.tabs=[];
+    if(!Array.isArray(data.money))data.money=[];
+    if(!data.goals||typeof data.goals!=='object')data.goals= {
+    };
+    data.tabs.forEach(tab=> {
+        if(!Array.isArray(tab.tasks))tab.tasks=[];tab.date=normalizeDate(tab.date);tab.tasks.forEach(t=> {
+            t.date=normalizeDate(t.date);if(typeof t.done!=='boolean')t.done=false;if(typeof t.daily!=='boolean')t.daily=false;
+        }
+        );
+    }
+    );
+    // Convert older unpadded month keys to padded keys.
+    Object.keys(data.goals).forEach(k=> {
+        const m=k.match(/^(\d{4})-(\d{1,2})$/);if(m) {
+            const nk=`${m[1]}-${pad(m[2])}`;if(data.goals[nk]===undefined)data.goals[nk]=data.goals[k];if(nk!==k)delete data.goals[k];
+        }
+    }
+    );
+    resetDaily();
+    save();
+}
+function save() {
+    try {
+        localStorage.setItem(KEY,JSON.stringify(data));
+        $('saveStatus').textContent='Αποθηκεύτηκε τοπικά στη συσκευή.';
+    }
+    catch(e) {
+        $('saveStatus').textContent='Προσοχή: δεν ήταν δυνατή η αποθήκευση στον browser.';
+        console.warn(e);
+    }
+}
+function resetDaily() {
+    const today=todayKey();
+    data.tabs.forEach(tab=>tab.tasks.forEach(t=> {
+        if(t.daily&&t.done&&t.doneDate!==today) {
+            t.done=false;t.doneDate=null;
+        }
+    }
+    ));
+}
+function dayTabs() {
+    return data.tabs.filter(t=>t.pinned||normalizeDate(t.date)===dayKey());
+}
+function cur() {
+    const list=dayTabs();
+    let found=list.find(t=>t.id===data.active);
+    if(!found&&list.length) {
+        found=list[0];
+        data.active=found.id;
+    }
+    return found||null;
+}
+function show(screen) {
+    view.screen=screen;
+    ['viewYear','viewMonth','viewDay','viewMoney'].forEach(id=>$(id).hidden=true);
+    const ids= {
+        year:'viewYear',
+        month:'viewMonth',
+        day:'viewDay',
+        money:'viewMoney'
+    };
+    if(ids[screen])$(ids[screen]).hidden=false;
+}
+// ---------- Εμφάνιση ημερολογίου ----------
+function renderYear() {
+    $('yearTitle').textContent=view.year;
+    const box=$('months');
+    box.innerHTML='';
+    MONTHS.forEach((name,i)=> {
+        const b=document.createElement('button');b.className='monthcard';b.textContent=name;b.onclick=()=> {
+            view.month=i;renderMonth();show('month');
+        }
+        ;box.appendChild(b);
+    }
+    );
+}
+function makeDay(n,col) {
+    const b=document.createElement('button');
+    b.className='day'+((col===0||col===6)?' weekend':'');
+    if(view.year===new Date().getFullYear()&&view.month===new Date().getMonth()&&n===new Date().getDate())b.classList.add('today');
+    if(n===view.day)b.classList.add('selected');
+    b.textContent=n;
+    const k=dateKey(view.year,view.month,n);
+    const hasTasks=data.tabs.some(t=>t.tasks.some(task=>(task.date===k||task.daily&&task.date<=k)&&!task.done));
+    if(hasTasks) {
+        const dot=document.createElement('span');
+        dot.className='dot';
+        dot.textContent='• εργασίες';
+        b.appendChild(dot);
+    }
+    b.onclick=()=> {
+        view.day=n;
+        data.active=null;
+        renderDay();
+        show('day');
+    };
+    return b;
+}
+function renderMonth() {
+    $('monthTitle').textContent=`${MONTHS[view.month]} ${view.year}`;
+    const wd=$('weekdays');
+    wd.innerHTML='';
+    WEEKDAYS.forEach(name=> {
+        const d=document.createElement('div');d.textContent=name;wd.appendChild(d);
+    }
+    );
+    const box=$('days');
+    box.innerHTML='';
+    const first=new Date(view.year,view.month,1).getDay();
+    const count=new Date(view.year,view.month+1,0).getDate();
+    for(let i=0;i<first;i++) {
+        const blank=document.createElement('div');
+        blank.className='day blank';
+        box.appendChild(blank);
+    }
+    for(let n=1;n<=count;n++)box.appendChild(makeDay(n,(first+n-1)%7));
+}
+// ---------- Λίστα εργασιών και καρτέλες ----------
+function renderTabs() {
+    const box=$('tabs');
+    box.innerHTML='';
+    dayTabs().forEach(tab=> {
+        const b=document.createElement('button');b.className='tab'+(tab.id===data.active?' on':'');b.textContent=(tab.pinned?'📌 ':'')+tab.name;const left=tab.tasks.filter(t=>(t.date===dayKey()||t.daily&&t.date<=dayKey())&&!t.done).length;if(left) {
+            const small=document.createElement('small');small.textContent=` · ${left}`;b.appendChild(small);
+        }
+        b.onclick=()=> {
+            data.active=tab.id;save();renderDay();
+        }
+        ;box.appendChild(b);
+    }
+    );
+    const n=document.createElement('button');
+    n.className='tab new';
+    n.textContent='+ Νέα καρτέλα';
+    n.onclick=()=> {
+        $('newtab').hidden=false;
+        $('tabName').focus();
+    };
+    box.appendChild(n);
+}
+function renderList() {
+    const tab=cur();
+    $('pinTab').textContent=tab&&tab.pinned?'Αφαίρεση καρφιτσώματος':'Καρφίτσωμα σε κάθε μέρα';
+    const ul=$('list');
+    ul.innerHTML='';
+    if(!tab) {
+        $('txt').placeholder='Δημιούργησε πρώτα μια καρτέλα';
+        $('fill').style.width='0%';
+        $('prog').textContent='';
+        const e=document.createElement('div');
+        e.className='empty';
+        e.textContent='Δεν υπάρχει καρτέλα για αυτή την ημέρα. Πάτησε «+ Νέα καρτέλα». ';
+        ul.appendChild(e);
+        return;
+    }
+    const tasks=tab.tasks.filter(t=>t.date===dayKey()||(t.daily&&t.date<=dayKey()));
+    $('txt').placeholder=`Εργασία στην καρτέλα «${tab.name}»`;
+    if(!tasks.length) {
+        const e=document.createElement('div');
+        e.className='empty';
+        e.textContent='Δεν υπάρχουν εργασίες για αυτή την ημέρα. Πρόσθεσε την πρώτη σου!';
+        ul.appendChild(e);
+    }
+    tasks.forEach(t=> {
+        const li=document.createElement('li');li.className='task'+(t.done?' done':'');const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t.done;cb.setAttribute('aria-label','Ολοκληρώθηκε');cb.onchange=()=> {
+            t.done=cb.checked;t.doneDate=cb.checked?todayKey():null;save();renderDay();
+        }
+        ;const sp=document.createElement('span');sp.className='tasktext';sp.textContent=t.text;li.append(cb,sp);if(t.daily) {
+            const tag=document.createElement('span');tag.className='tag';tag.textContent='καθημερινά';li.appendChild(tag);
+        }
+        const del=document.createElement('button');del.className='delete';del.textContent='×';del.setAttribute('aria-label','Διαγραφή εργασίας');del.onclick=()=> {
+            if(confirm('Να διαγραφεί αυτή η εργασία;')) {
+                tab.tasks=tab.tasks.filter(x=>x!==t);save();renderDay();
+            }
+        }
+        ;li.appendChild(del);ul.appendChild(li);
+    }
+    );
+    const done=tasks.filter(t=>t.done).length;
+    $('fill').style.width=(tasks.length?done/tasks.length*100:0)+'%';
+    $('prog').textContent=tasks.length?`${done} από ${tasks.length} ολοκληρώθηκαν`:'';
+}
+function renderDay() {
+    $('dayTitle').textContent=`${view.day} ${MONTHS[view.month]} ${view.year}`;
+    renderTabs();
+    renderList();
+}
+function addTask() {
+    const input=$('txt'),
+    text=input.value.trim(),
+    tab=cur();
+    if(!text||!tab) {
+        if(!tab)alert('Δημιούργησε ή επίλεξε πρώτα μια καρτέλα.');
+        return;
+    }
+    tab.tasks.push( {
+        id:uid(),text,date:dayKey(),daily:$('daily').checked,done:false,doneDate:null
+    }
+    );
+    input.value='';
+    $('daily').checked=false;
+    save();
+    renderDay();
+    input.focus();
+}
+function addTab() {
+    const input=$('tabName'),
+    name=input.value.trim();
+    if(!name)return;
+    const tab= {
+        id:uid(),
+        name:name.slice(0,30),
+        date:dayKey(),
+        pinned:false,
+        tasks:[]
+    };
+    data.tabs.push(tab);
+    data.active=tab.id;
+    input.value='';
+    $('newtab').hidden=true;
+    save();
+    renderDay();
+}
+// ---------- Έσοδα, έξοδα και αποταμίευση ----------
+function renderMoney() {
+    $('moneyTitle').textContent=`${MONTHS[view.month]} ${view.year}`;
+    $('tabIncome').className='tab'+(moneyKind==='income'?' on':'');
+    $('tabExpense').className='tab'+(moneyKind==='expense'?' on':'');
+    const ul=$('mList');
+    ul.innerHTML='';
+    const items=data.money.filter(m=>m.level==='month'&&normalizeDate(m.date+'-01').slice(0,7)===monthKey()&&m.kind===moneyKind);
+    if(!items.length) {
+        const e=document.createElement('div');
+        e.className='empty';
+        e.textContent=moneyKind==='income'?'Δεν υπάρχουν έσοδα για αυτόν τον μήνα.':'Δεν υπάρχουν έξοδα για αυτόν τον μήνα.';
+        ul.appendChild(e);
+    }
+    items.forEach(m=> {
+        const li=document.createElement('li');li.className='task';const sp=document.createElement('span');sp.className='tasktext';sp.textContent=m.name;const amount=document.createElement('span');amount.className='amt';amount.textContent=eur(m.amount);const del=document.createElement('button');del.className='delete';del.textContent='×';del.setAttribute('aria-label','Διαγραφή καταχώρισης');del.onclick=()=> {
+            if(confirm('Να διαγραφεί αυτή η καταχώριση;')) {
+                data.money=data.money.filter(x=>x!==m);save();renderMoney();
+            }
+        }
+        ;li.append(sp,amount,del);ul.appendChild(li);
+    }
+    );
+    $('mTotal').textContent='Σύνολο: '+eur(monthSum(moneyKind));
+    $('goal').value=data.goals[monthKey()]??'';
+    $('result').innerHTML='';
+}
+function monthSum(kind) {
+    return data.money.filter(m=>m.level==='month'&&normalizeDate(m.date+'-01').slice(0,7)===monthKey()&&m.kind===kind).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
+}
+function addMoney() {
+    const name=$('mName').value.trim(),
+    amount=Number($('mAmount').value);
+    if(!name||!Number.isFinite(amount)||amount<=0) {
+        alert('Συμπλήρωσε περιγραφή και ποσό μεγαλύτερο από μηδέν.');
+        return;
+    }
+    data.money.push( {
+        id:uid(),kind:moneyKind,name,amount,level:'month',date:monthKey()
+    }
+    );
+    $('mName').value='';
+    $('mAmount').value='';
+    save();
+    renderMoney();
+    $('mName').focus();
+}
+function calcMonth() {
+    const income=monthSum('income'),
+    expense=monthSum('expense'),
+    goal=Math.max(0,Number(data.goals[monthKey()])||0),
+    balance=income-expense,
+    left=balance-goal;
+    let status,
+    message;
+    if(balance<0) {
+        status='minus';
+        message='Τα έξοδα είναι μεγαλύτερα από τα έσοδα αυτόν τον μήνα.';
+    }
+    else if(balance<goal) {
+        status='close';
+        message='Έχεις θετικό υπόλοιπο, αλλά δεν έχεις φτάσει τον στόχο αποταμίευσης.';
+    }
+    else {
+        status='ok';
+        message='Ο στόχος αποταμίευσης καλύπτεται με βάση τις καταχωρίσεις σου.';
+    }
+    const r=$('result');
+    r.innerHTML='';
+    [['Έσοδα',income],['Έξοδα',expense],['Υπόλοιπο',balance],['Στόχος αποταμίευσης',goal],['Μετά την αποταμίευση',left]].forEach(([label,value])=> {
+        const d=document.createElement('div');d.textContent=`${label}: ${eur(value)}`;r.appendChild(d);
+    }
+    );
+    const msg=document.createElement('div');
+    msg.className='msg '+status;
+    msg.textContent=message;
+    r.appendChild(msg);
+}
+// ---------- Σύνδεση κουμπιών ----------
+$('yearPrev').onclick=()=> {
+    view.year--;
+    renderYear();
+};
+$('yearNext').onclick=()=> {
+    view.year++;
+    renderYear();
+};
+$('monthBack').onclick=()=> {
+    show('year');
+};
+$('dayBack').onclick=()=> {
+    renderMonth();
+    show('month');
+};
+$('moneyBtn').onclick=()=> {
+    view.returnFromMoney='month';
+    renderMoney();
+    show('money');
+};
+$('dayMoneyBtn').onclick=()=> {
+    view.returnFromMoney='day';
+    renderMoney();
+    show('money');
+};
+$('moneyBack').onclick=()=> {
+    if(view.returnFromMoney==='day') {
+        renderDay();
+        show('day');
+    }
+    else {
+        renderMonth();
+        show('month');
+    }
+};
+$('addBtn').onclick=addTask;
+$('txt').addEventListener('keydown',e=> {
+    if(e.key==='Enter')addTask();
+}
+);
+$('tabOk').onclick=addTab;
+$('tabName').addEventListener('keydown',e=> {
+    if(e.key==='Enter')addTab();
+}
+);
+$('rename').onclick=()=> {
+    const tab=cur();
+    if(!tab)return;
+    const name=prompt('Νέο όνομα καρτέλας:',tab.name);
+    if(name&&name.trim()) {
+        tab.name=name.trim().slice(0,30);
+        save();
+        renderDay();
+    }
+};
+$('pinTab').onclick=()=> {
+    const tab=cur();
+    if(!tab)return;
+    tab.pinned=!tab.pinned;
+    save();
+    renderDay();
+};
+$('clear').onclick=()=> {
+    const tab=cur();
+    if(!tab)return;
+    if(confirm('Να διαγραφούν οι ολοκληρωμένες μη καθημερινές εργασίες αυτής της ημέρας;')) {
+        tab.tasks=tab.tasks.filter(t=>!(t.date===dayKey()&&t.done&&!t.daily));
+        save();
+        renderDay();
+    }
+};
+$('tabIncome').onclick=()=> {
+    moneyKind='income';
+    renderMoney();
+};
+$('tabExpense').onclick=()=> {
+    moneyKind='expense';
+    renderMoney();
+};
+$('mAdd').onclick=addMoney;
+$('mAmount').addEventListener('keydown',e=> {
+    if(e.key==='Enter')addMoney();
+}
+);
+$('mName').addEventListener('keydown',e=> {
+    if(e.key==='Enter')addMoney();
+}
+);
+$('goal').addEventListener('input',()=> {
+    const n=Number($('goal').value);data.goals[monthKey()]=$('goal').value===''?0:Math.max(0,n||0);save();
+}
+);
+$('calcBtn').onclick=calcMonth;
+document.addEventListener('visibilitychange',()=> {
+    if(!document.hidden) {
+        resetDaily();save();if(view.screen==='day')renderDay();
+    }
+}
+);
+// ---------- Εκκίνηση εφαρμογής ----------
+$('date').textContent=new Date().toLocaleDateString('el-GR', {
+    weekday:'long',day:'numeric',month:'long',year:'numeric'
+}
+);
+load();
+renderYear();
+renderMonth();
+show('year');
+</script>
+ </body>
+</html>
